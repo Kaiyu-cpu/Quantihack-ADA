@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from execution.backtester import run_backtest
 from processing.indicators import build_signals_from_event_df
+from processing.price_align import align_to_index
 from config import (
     POLY_STRIKE_VAL,
     POLY_DIRECTION,
@@ -20,6 +21,8 @@ from config import (
     RSI_WINDOW,
     RSI_LOW,
     RSI_HIGH,
+    TRADE_ON,
+    FUTURES_CSV_PATH,
 )
 
 st.set_page_config(page_title="QuantiHack ADA", layout="wide")
@@ -57,6 +60,7 @@ direction = st.sidebar.selectbox(
     index=available_dirs.index(str(default_dir)) if str(default_dir) in available_dirs else 0,
 )
 resample_rule = st.sidebar.selectbox("Resample", ["1h", "30m", "15m", "1d"], index=0)
+trade_on = st.sidebar.selectbox("Trade On", ["polymarket", "futures"], index=0 if TRADE_ON == "polymarket" else 1)
 
 st.sidebar.subheader("Indicators")
 rsi_low = st.sidebar.slider("RSI Low", 10, 50, int(RSI_LOW))
@@ -90,7 +94,22 @@ except ValueError as exc:
     st.error(str(exc))
     st.stop()
 
-result = run_backtest(prices, signals)
+# Optionally trade on futures prices instead of Polymarket prices
+futures_available = os.path.exists(FUTURES_CSV_PATH)
+futures_series = None
+if futures_available:
+    futures_df = pd.read_csv(FUTURES_CSV_PATH, parse_dates=["timestamp"])
+    futures_df["timestamp"] = pd.to_datetime(futures_df["timestamp"], utc=True)
+    futures_series = futures_df.set_index("timestamp")["close"]
+
+trade_prices = prices
+if trade_on == "futures":
+    if not futures_available:
+        st.error(f"Missing futures CSV: {FUTURES_CSV_PATH}")
+        st.stop()
+    trade_prices = align_to_index(futures_series, prices.index)
+
+result = run_backtest(trade_prices, signals)
 metrics = result["metrics"]
 eq      = pd.DataFrame(result["equity_curve"])
 
@@ -107,6 +126,21 @@ st.caption(f"Buy & Hold Return: {metrics.get('buy_hold_return_pct', 0.0):.2f}%  
 st.subheader("Equity Curve")
 st.line_chart(eq.set_index("date")["value"])
 
+# ── Comparison: Polymarket vs Futures (same signals) ─────────────────────────
+if futures_available:
+    pm_result = run_backtest(prices, signals)
+    fut_prices = align_to_index(futures_series, prices.index)
+    fut_result = run_backtest(fut_prices, signals)
+
+    pm_eq = pd.DataFrame(pm_result["equity_curve"]).set_index("date")["value"]
+    fut_eq = pd.DataFrame(fut_result["equity_curve"]).set_index("date")["value"]
+    compare = pd.DataFrame({
+        "Polymarket": pm_eq,
+        "Futures (CL=F)": fut_eq,
+    })
+    st.subheader("Equity Curve Comparison")
+    st.line_chart(compare)
+
 # ── Signal Distribution ───────────────────────────────────────────────────────
 st.subheader("Signal Distribution")
 st.bar_chart(signals.value_counts().sort_index())
@@ -114,7 +148,7 @@ st.bar_chart(signals.value_counts().sort_index())
 # ── Price + Signals Overlay ───────────────────────────────────────────────────
 st.subheader("Price With Signals")
 overlay = pd.DataFrame({
-    "price": prices,
+    "price": trade_prices,
     "signal": signals,
 })
 st.line_chart(overlay["price"])

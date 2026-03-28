@@ -51,3 +51,8 @@ BB_WINDOW  = int(os.getenv("BB_WINDOW", "20"))
 RSI_WINDOW = int(os.getenv("RSI_WINDOW", "14"))
 RSI_LOW    = float(os.getenv("RSI_LOW", "45"))
 RSI_HIGH   = float(os.getenv("RSI_HIGH", "55"))
+
+# ── Backtest price source ─────────────────────────────────────────────────────
+# "polymarket" (trade on Polymarket price) or "futures" (trade CL=F futures)
+TRADE_ON = os.getenv("TRADE_ON", "polymarket")
+FUTURES_CSV_PATH = os.getenv("FUTURES_CSV_PATH", "data/raw/nymex/CL_F_1d.csv")
