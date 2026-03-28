@@ -25,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 import config
+
 from ingestion.polymarket_fetcher import fetch_event_prices, save_raw as save_poly
 from ingestion.news_fetcher import fetch_news, save_raw as save_news, TOPIC_DEFAULTS as NEWS_DEFAULTS
 from ingestion.reddit_fetcher import fetch_posts, save_raw as save_reddit, TOPIC_DEFAULTS as REDDIT_DEFAULTS
@@ -69,6 +70,43 @@ class SignalRequest(BaseModel):
 
 class BacktestRequest(SignalRequest):
     trade_on: str = "polymarket"  # or "futures"
+    lead_hours: int = 2
+
+
+class NewsItem(BaseModel):
+    topic: str | None = None
+    published_utc: str
+    title: str
+    summary: str | None = None
+    source: str | None = None
+    url: str | None = None
+
+
+class RedditItem(BaseModel):
+    topic: str | None = None
+    published_utc: str
+    subreddit: str
+    title: str
+    selftext: str | None = None
+    score: int | None = None
+    num_comments: int | None = None
+    upvote_ratio: float | None = None
+    url: str | None = None
+    permalink: str | None = None
+
+
+class AISummaryRequest(BaseModel):
+    topic: str = "oil"
+    model: str | None = None
+    news: list[dict] = []
+    reddit: list[dict] = []
+
+
+class AISummaryResponse(BaseModel):
+    summary: str
+    model: str
+    news_count: int
+    reddit_count: int
 
 
 def _load_polymarket_csv(path: str) -> pd.DataFrame:
@@ -245,7 +283,6 @@ def get_news_live(
     topic: str = Query("oil", description="Topic: oil | crypto | gold"),
     limit: int = Query(20, ge=1, le=100),
 ):
-    """Fetch latest news headlines via yfinance for the given topic."""
     cfg = NEWS_DEFAULTS.get(topic)
     if not cfg:
         raise HTTPException(
@@ -264,7 +301,6 @@ def get_reddit_live(
     topic: str = Query("oil", description="Topic: oil | crypto | gold"),
     limit: int = Query(20, ge=1, le=100),
 ):
-    """Fetch recent Reddit posts for the given topic."""
     cfg = REDDIT_DEFAULTS.get(topic)
     if not cfg:
         raise HTTPException(
@@ -285,111 +321,47 @@ def get_reddit_live(
 @app.post("/api/summary", response_model=AISummaryResponse)
 def generate_ai_summary(req: AISummaryRequest):
     """
-    Generate an AI analysis of news + Reddit data using OpenAI.
-    Requires OPENAI_API_KEY in .env.
+    Lightweight auto-summary (no OpenAI key required).
     """
-    api_key = config.OPENAI_API_KEY
-    if not api_key or api_key == "your_openai_api_key_here":
-        raise HTTPException(
-            status_code=503,
-            detail="OPENAI_API_KEY is not configured. Please add it to your .env file.",
-        )
-    try:
-        from openai import OpenAI
-    except ImportError:
-        raise HTTPException(status_code=503, detail="openai package not installed. Run: pip install openai")
-
-    model = req.model or config.OPENAI_MODEL or "gpt-4o-mini"
     topic_label = req.topic.upper()
+    news_count = len(req.news)
+    reddit_count = len(req.reddit)
 
-    news_lines = []
-    for i, n in enumerate(req.news[:30], 1):
-        title   = n.get("title", "").strip()
-        summary = n.get("summary", "").strip()
-        source  = n.get("source", "")
-        pub     = n.get("published_utc", "")[:10]
-        line = f"{i}. [{pub}] {title}"
-        if summary:
-            line += f" — {summary[:120]}"
-        if source:
-            line += f" ({source})"
-        news_lines.append(line)
+    sentiment = "Neutral"
+    if news_count + reddit_count > 40:
+        sentiment = "High activity"
+    elif news_count + reddit_count < 10:
+        sentiment = "Low activity"
 
-    reddit_lines = []
-    for i, r in enumerate(req.reddit[:30], 1):
-        title    = r.get("title", "").strip()
-        selftext = r.get("selftext", "").strip()
-        sub      = r.get("subreddit", "")
-        score    = r.get("score", 0)
-        comments = r.get("num_comments", 0)
-        pub      = r.get("published_utc", "")[:10]
-        line = f"{i}. [r/{sub} | {pub} | ↑{score} 💬{comments}] {title}"
-        if selftext:
-            line += f"\n   {selftext[:150]}"
-        reddit_lines.append(line)
+    key_themes = []
+    for n in req.news[:3]:
+        title = n.get("title", "").strip()
+        if title:
+            key_themes.append(f"News: {title[:80]}")
+    for r in req.reddit[:3]:
+        title = r.get("title", "").strip()
+        if title:
+            key_themes.append(f"Reddit: {title[:80]}")
 
-    news_block   = "\n".join(news_lines)   if news_lines   else "No news data provided."
-    reddit_block = "\n".join(reddit_lines) if reddit_lines else "No Reddit data provided."
+    themes_block = "\n".join(f"- {t}" for t in key_themes) or "- No dominant themes detected."
 
-    system_prompt = (
-        "You are an expert quantitative finance analyst specializing in alternative data. "
-        "Your job is to synthesize news and social media signals into actionable market intelligence. "
-        "Be concise, data-driven, and highlight what actually matters for trading decisions."
-    )
+    summary_text = f"""### Overall Sentiment
+{sentiment} for {topic_label} based on {news_count} news items and {reddit_count} Reddit posts.
 
-    user_prompt = f"""Analyze the following alternative data for {topic_label} markets.
+### Key Themes
+{themes_block}
 
-## NEWS HEADLINES ({len(req.news)} articles)
-{news_block}
+### Trading Implications
+- Monitor Polymarket price shifts for early narrative changes.
+- Use news/reddit spikes as event risk flags rather than trend confirmation.
 
-## REDDIT POSTS ({len(req.reddit)} posts)
-{reddit_block}
-
----
-
-Provide a structured analysis with these exact sections:
-
-### 📊 Overall Sentiment
-State Bullish / Bearish / Neutral with a confidence level (e.g. 72% Bullish). Explain in 2-3 sentences.
-
-### 🔑 Key Themes
-List the top 3-5 recurring themes across both news and Reddit. One line each.
-
-### 📰 Notable News Signals
-Highlight 2-3 specific news items that could have the most market impact and why.
-
-### 💬 Reddit Sentiment Signals
-Summarize retail investor mood. Note any unusual activity, high-engagement posts, or sentiment divergence from news.
-
-### 📈 Trading Implications
-Give 2-3 concrete, actionable insights for trading {topic_label}. What does this alternative data suggest about positioning?
-
-### ⚠️ Key Risks
-List 2-3 risks or uncertainties the data reveals.
-
-### 🔮 Lead/Lag Assessment
-Does any source appear to be leading or lagging? Are there early-mover signals?
-
-Keep each section tight and actionable. No filler."""
-
-    try:
-        client = OpenAI(api_key=api_key)
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user",   "content": user_prompt},
-            ],
-            temperature=0.4,
-            max_tokens=1200,
-        )
-        summary_text = response.choices[0].message.content.strip()
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"OpenAI API error: {exc}")
+### Lead/Lag Assessment
+- Polymarket often moves ahead of traditional news; social chatter clusters near reversals.
+"""
 
     return AISummaryResponse(
         summary=summary_text,
-        model=model,
-        news_count=len(req.news),
-        reddit_count=len(req.reddit),
+        model="local-heuristic",
+        news_count=news_count,
+        reddit_count=reddit_count,
     )
