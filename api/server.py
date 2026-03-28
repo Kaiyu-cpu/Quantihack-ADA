@@ -66,10 +66,12 @@ class SignalRequest(BaseModel):
     ema_window: int = 12
     bb_window: int = 20
     signal_type: str = "rsi"
+    signal_type: str = "rsi"
 
 
 class BacktestRequest(SignalRequest):
     trade_on: str = "polymarket"  # or "futures"
+    lead_hours: int = 2
     lead_hours: int = 2
 
 
@@ -190,6 +192,20 @@ def eda_polymarket():
     df = _load_polymarket_csv(path)
     counts = df.groupby(["direction", "strike_val"]).size().sort_values(ascending=False)
     top_dir, top_strike = counts.index[0]
+    news_path = os.path.join(DATA_RAW_DIR, "news", "oil.csv")
+    reddit_path = os.path.join(DATA_RAW_DIR, "reddit", "oil.csv")
+    news_count = 0
+    reddit_count = 0
+    if os.path.exists(news_path):
+        try:
+            news_count = len(pd.read_csv(news_path))
+        except Exception:
+            news_count = 0
+    if os.path.exists(reddit_path):
+        try:
+            reddit_count = len(pd.read_csv(reddit_path))
+        except Exception:
+            reddit_count = 0
     return {
         "rows": len(df),
         "strikes": int(df["strike_val"].nunique()),
@@ -197,6 +213,8 @@ def eda_polymarket():
         "range_end": str(df["timestamp"].max().date()),
         "top_strike": int(top_strike),
         "top_direction": str(top_dir),
+        "news_count": news_count,
+        "reddit_count": reddit_count,
     }
 
 
@@ -238,18 +256,24 @@ def signals_suggest(req: SignalRequest):
 def backtest_api(req: BacktestRequest):
     path = os.path.join(DATA_RAW_DIR, "polymarket", "crude_oil_prices.csv")
     df = _load_polymarket_csv(path)
-    prices, signals, _ind = build_signals_from_event_df(
-        df,
-        strike_val=req.strike_val,
-        direction=req.direction,
-        resample_rule=req.resample_rule,
-        sma_w=req.sma_window,
-        ema_w=req.ema_window,
-        bb_w=req.bb_window,
-        rsi_w=req.rsi_window,
-        rsi_low=req.rsi_low,
-        rsi_high=req.rsi_high,
-    )
+    if req.signal_type == "true_price":
+        times = df["timestamp"].drop_duplicates().sort_values()
+        true_price = compute_true_price_series(df, pd.DatetimeIndex(times))
+        signals = zscore_signal(true_price)
+        prices = true_price
+    else:
+        prices, signals, _ind = build_signals_from_event_df(
+            df,
+            strike_val=req.strike_val,
+            direction=req.direction,
+            resample_rule=req.resample_rule,
+            sma_w=req.sma_window,
+            ema_w=req.ema_window,
+            bb_w=req.bb_window,
+            rsi_w=req.rsi_window,
+            rsi_low=req.rsi_low,
+            rsi_high=req.rsi_high,
+        )
 
     trade_prices = prices
     if req.trade_on == "futures":
@@ -260,7 +284,16 @@ def backtest_api(req: BacktestRequest):
         fut_series = fut.set_index("timestamp")["close"]
         trade_prices = align_to_index(fut_series, prices.index)
 
-    result = run_backtest(trade_prices, signals)
+    shifted_signals = shift_signals(signals, req.lead_hours)
+    shifted_signals = shifted_signals.reindex(trade_prices.index, fill_value=0)
+
+    result = run_backtest(trade_prices, shifted_signals)
+    counts = shifted_signals.value_counts().to_dict()
+    result["signal_counts"] = {
+        "buy": int(counts.get(1, 0)),
+        "sell": int(counts.get(-1, 0)),
+        "hold": int(counts.get(0, 0)),
+    }
     return result
 
 
