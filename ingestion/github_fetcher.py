@@ -2,6 +2,11 @@
 GitHub Issue Fetcher
 Pulls bug/issue history for survival analysis.
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # project root
+
 import requests
 import pandas as pd
 from config import GITHUB_TOKEN, GITHUB_REPO, DATA_RAW_DIR
@@ -21,6 +26,9 @@ def fetch_issues(state: str = "all", max_pages: int = 10) -> pd.DataFrame:
             break
         issues.extend(batch)
 
+    if not issues:
+        return pd.DataFrame(columns=["number", "state", "created_at", "closed_at", "labels", "duration_days"])
+
     df = pd.json_normalize(issues)[["number", "state", "created_at", "closed_at", "labels"]]
     df["created_at"] = pd.to_datetime(df["created_at"])
     df["closed_at"]  = pd.to_datetime(df["closed_at"])
@@ -29,7 +37,8 @@ def fetch_issues(state: str = "all", max_pages: int = 10) -> pd.DataFrame:
 
 
 def save_raw(df: pd.DataFrame, filename: str = "issues.parquet") -> None:
-    path = f"{DATA_RAW_DIR}/github/{filename}"
+    path = Path(f"{DATA_RAW_DIR}/github/{filename}")
+    path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(path, index=False)
     print(f"Saved {len(df)} issues → {path}")
 
