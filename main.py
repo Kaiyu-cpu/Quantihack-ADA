@@ -5,7 +5,19 @@ from ingestion.github_fetcher    import fetch_issues, save_raw as save_issues
 from ingestion.polymarket_fetcher import fetch_event_prices, save_raw as save_poly
 from processing.survival_analysis import compute_agility_score
 from processing.market_features   import compute_market_features
+from processing.indicators        import build_signals_from_event_df
 from execution.backtester         import run_backtest
+from config import (
+    POLY_STRIKE_VAL,
+    POLY_DIRECTION,
+    POLY_RESAMPLE,
+    SMA_WINDOW,
+    EMA_WINDOW,
+    BB_WINDOW,
+    RSI_WINDOW,
+    RSI_LOW,
+    RSI_HIGH,
+)
 
 
 def run_pipeline(event_slug: str) -> None:
@@ -22,10 +34,19 @@ def run_pipeline(event_slug: str) -> None:
 
     print(f"Agility score: {agility_df['agility_score'].iloc[0]:.4f}")
 
-    print("=== 3. Execution (placeholder signals) ===")
-    import pandas as pd, numpy as np
-    prices  = market_df.set_index("timestamp")["price"]
-    signals = pd.Series(np.random.choice([-1, 0, 1], len(prices)), index=prices.index)
+    print("=== 3. Execution (mean-reversion signals) ===")
+    prices, signals, _ind = build_signals_from_event_df(
+        market_df,
+        strike_val=POLY_STRIKE_VAL,
+        direction=POLY_DIRECTION,
+        resample_rule=POLY_RESAMPLE,
+        sma_w=SMA_WINDOW,
+        ema_w=EMA_WINDOW,
+        bb_w=BB_WINDOW,
+        rsi_w=RSI_WINDOW,
+        rsi_low=RSI_LOW,
+        rsi_high=RSI_HIGH,
+    )
 
     result = run_backtest(prices, signals)
     print("Backtest metrics:", result["metrics"])

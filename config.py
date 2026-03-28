@@ -36,3 +36,18 @@ STOP_LOSS_PCT = os.getenv("STOP_LOSS_PCT", "")
 TAKE_PROFIT_PCT = os.getenv("TAKE_PROFIT_PCT", "")
 STOP_LOSS_PCT = float(STOP_LOSS_PCT) if STOP_LOSS_PCT else None
 TAKE_PROFIT_PCT = float(TAKE_PROFIT_PCT) if TAKE_PROFIT_PCT else None
+
+# Annualization for Sharpe (daily=252, hourly=24*365, etc.)
+BACKTEST_PERIODS_PER_YEAR = int(os.getenv("BACKTEST_PERIODS_PER_YEAR", "252"))
+
+# ── Polymarket signal config ──────────────────────────────────────────────────
+POLY_STRIKE_VAL = int(os.getenv("POLY_STRIKE_VAL", "95"))
+POLY_DIRECTION  = os.getenv("POLY_DIRECTION", "up")
+POLY_RESAMPLE   = os.getenv("POLY_RESAMPLE", "1h")
+
+SMA_WINDOW = int(os.getenv("SMA_WINDOW", "12"))
+EMA_WINDOW = int(os.getenv("EMA_WINDOW", "12"))
+BB_WINDOW  = int(os.getenv("BB_WINDOW", "20"))
+RSI_WINDOW = int(os.getenv("RSI_WINDOW", "14"))
+RSI_LOW    = float(os.getenv("RSI_LOW", "35"))
+RSI_HIGH   = float(os.getenv("RSI_HIGH", "65"))

@@ -12,6 +12,7 @@ from config import (
     COMMISSION_PCT,
     STOP_LOSS_PCT,
     TAKE_PROFIT_PCT,
+    BACKTEST_PERIODS_PER_YEAR,
 )
 
 
@@ -91,16 +92,16 @@ def run_backtest(prices: pd.Series, signals: pd.Series) -> dict:
         portfolio_value = capital + (position.current_value(price) if position else 0)
         equity_curve.append({"date": str(date), "value": round(portfolio_value, 6)})
 
-    metrics = _calculate_metrics(equity_curve, INITIAL_CAPITAL)
+    metrics = _calculate_metrics(equity_curve, INITIAL_CAPITAL, BACKTEST_PERIODS_PER_YEAR)
     return {"metrics": metrics, "equity_curve": equity_curve, "trades": trades, "final_capital": round(capital, 2)}
 
 
-def _calculate_metrics(equity_curve: list, initial_capital: float) -> dict:
+def _calculate_metrics(equity_curve: list, initial_capital: float, periods_per_year: int) -> dict:
     values = pd.Series([e["value"] for e in equity_curve])
     total_return = (values.iloc[-1] - initial_capital) / initial_capital * 100
 
     daily_returns = values.pct_change().dropna()
-    sharpe = (daily_returns.mean() / daily_returns.std()) * np.sqrt(252) if daily_returns.std() != 0 else 0
+    sharpe = (daily_returns.mean() / daily_returns.std()) * np.sqrt(periods_per_year) if daily_returns.std() != 0 else 0
 
     rolling_max = values.cummax()
     drawdown = (values - rolling_max) / rolling_max
