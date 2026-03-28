@@ -17,8 +17,6 @@ ENV/
 *.pem
 
 # ── Data files (tracked separately, e.g. DVC) ────────────────────────────────
-data/raw/
-data/processed/
 *.parquet
 *.csv
 *.h5
