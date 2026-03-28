@@ -40,6 +40,13 @@ TAKE_PROFIT_PCT = float(TAKE_PROFIT_PCT) if TAKE_PROFIT_PCT else None
 # Annualization for Sharpe (daily=252, hourly=24*365, etc.)
 BACKTEST_PERIODS_PER_YEAR = int(os.getenv("BACKTEST_PERIODS_PER_YEAR", "252"))
 
+# ── AI / LLM ─────────────────────────────────────────────────────────────────
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL   = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+# ── Optimiser ─────────────────────────────────────────────────────────────────
+OPTUNA_N_TRIALS = int(os.getenv("OPTUNA_N_TRIALS", "100"))
+
 # ── Polymarket signal config ──────────────────────────────────────────────────
 POLY_STRIKE_VAL = int(os.getenv("POLY_STRIKE_VAL", "95"))
 POLY_DIRECTION  = os.getenv("POLY_DIRECTION", "up")

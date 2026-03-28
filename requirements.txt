@@ -20,6 +20,12 @@ yfinance>=0.2
 streamlit>=1.35
 plotly>=5.22              # richer charts inside Streamlit
 
+# ── AI / LLM ──────────────────────────────────────────────────────────────────
+openai>=1.30                # GPT-4o-mini for reports, optimiser narrative, stress scenarios
+
+# ── Parameter Optimisation ────────────────────────────────────────────────────
+optuna>=3.6                 # Bayesian search over backtest parameters
+
 # ── Dev / Testing ─────────────────────────────────────────────────────────────
 pytest>=8.2
 jupyter>=1.0

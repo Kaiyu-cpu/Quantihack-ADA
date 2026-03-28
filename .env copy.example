@@ -3,6 +3,13 @@ GITHUB_TOKEN=ghp_...
 GITHUB_REPO=owner/repo
 POLYMARKET_API_KEY=...
 
+# OpenAI — required for AI Report, Optimiser narrative, and Scenario Stress
+OPENAI_API_KEY=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
+OPENAI_MODEL=gpt-4o-mini
+
+# Optimiser
+OPTUNA_N_TRIALS=100
+
 # Reddit API — https://www.reddit.com/prefs/apps → create "script" app
 REDDIT_CLIENT_ID=...
 REDDIT_CLIENT_SECRET=...
