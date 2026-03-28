@@ -1,27 +1,3 @@
-<<<<<<< HEAD
-import { useEffect, useState } from 'react'
-import { api } from '../api.js'
-
-export default function Summary() {
-  const [summary, setSummary] = useState('')
-
-  useEffect(() => {
-    api.summary()
-      .then((res) => setSummary(res.summary))
-      .catch(() => setSummary('Summary unavailable.'))
-  }, [])
-
-  return (
-    <div className="grid">
-      <div className="card" style={{ gridColumn: '1 / -1' }}>
-        <h3>AI Summary Report</h3>
-        <p>{summary}</p>
-        <div className="panel-row" style={{ marginTop: 12 }}>
-          <span className="badge">Best Strike: $100 Up</span>
-          <span className="badge">Sharpe: 0.42</span>
-          <span className="badge">Lead/Lag: +6h</span>
-        </div>
-=======
 import { useState, useCallback } from 'react'
 
 const API = 'http://localhost:8000'
@@ -56,7 +32,6 @@ function NewsCard({ item }) {
     }}>
       <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 4 }}>
         {item.published_utc?.slice(0, 10)} · {item.source}
->>>>>>> 1b78025 (All summary page logic done)
       </div>
       <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, lineHeight: 1.4 }}>
         <a href={item.url} target="_blank" rel="noreferrer"
@@ -176,7 +151,7 @@ export default function Summary() {
   const [summary, setSummary]     = useState(null)
   const [fetching, setFetching]   = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
-  const [fetchError, setFetchError]   = useState(null)
+  const [fetchError, setFetchError]     = useState(null)
   const [analyzeError, setAnalyzeError] = useState(null)
   const [activeTab, setActiveTab] = useState('news')
 
@@ -319,13 +294,12 @@ export default function Summary() {
       </div>
 
       {/* Error banners */}
-      {fetchError && <ErrorBanner msg={fetchError} />}
+      {fetchError   && <ErrorBanner msg={fetchError} />}
       {analyzeError && <ErrorBanner msg={analyzeError} />}
 
-      {/* Content */}
+      {/* Content tabs */}
       {hasData && (
         <div className="card">
-          {/* Tabs */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 12 }}>
             {[
               { id: 'news',    label: `📰 News (${news.length})` },
@@ -351,7 +325,6 @@ export default function Summary() {
             ))}
           </div>
 
-          {/* Tab content */}
           {activeTab === 'news' && (
             <div style={{ maxHeight: 480, overflowY: 'auto', paddingRight: 4 }}>
               {news.length === 0
@@ -381,12 +354,11 @@ export default function Summary() {
         </div>
       )}
 
-      {/* Empty state before any action */}
+      {/* Empty state */}
       {!hasData && !fetching && !fetchError && (
         <div className="card" style={{
           textAlign: 'center',
           padding: '48px 24px',
-          gridColumn: '1 / -1',
           border: '1px dashed rgba(255,255,255,0.12)',
           background: 'transparent',
         }}>
@@ -405,7 +377,7 @@ export default function Summary() {
           <Spinner size={28} />
           <div style={{ marginTop: 14, color: 'var(--muted)', fontSize: 14 }}>
             Fetching live news & Reddit data for <strong style={{ color: 'var(--text)' }}>{topic}</strong>…
-            <br /><span style={{ fontSize: 12 }}>Reddit may take 15-30s due to rate limiting</span>
+            <br /><span style={{ fontSize: 12 }}>Reddit may take 15–30s due to rate limiting</span>
           </div>
         </div>
       )}
