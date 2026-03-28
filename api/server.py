@@ -7,9 +7,14 @@ from __future__ import annotations
 import os
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load .env BEFORE importing modules that read config
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
 
 import pandas as pd
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -22,8 +27,6 @@ from processing.indicators import build_signals_from_event_df
 from processing.price_align import align_to_index
 from execution.backtester import run_backtest
 from config import DATA_RAW_DIR, FUTURES_CSV_PATH
-
-load_dotenv()
 
 app = FastAPI(title="QuantiHack ADA API")
 
@@ -39,6 +42,7 @@ app.add_middleware(
 class FetchRequest(BaseModel):
     topic: str = "oil"
     event_slug: Optional[str] = None
+    fast: bool = False
 
 
 class SignalRequest(BaseModel):
@@ -94,16 +98,38 @@ def fetch_reddit_api(req: FetchRequest):
     cfg = REDDIT_DEFAULTS.get(req.topic, None)
     if not cfg:
         raise HTTPException(status_code=400, detail="Unknown topic")
-    rows = fetch_posts(cfg["subreddits"], cfg["keywords"], topic=req.topic, start_date=cfg["start_date"])
+    subreddits = cfg["subreddits"]
+    keywords = cfg["keywords"]
+    # Fast mode: reduce workload for UI responsiveness
+    if req.fast:
+        subreddits = subreddits[:2]
+        keywords = keywords[:2]
+        post_limit = 25
+        time_filter = "week"
+    else:
+        post_limit = 100
+        time_filter = "month"
+    rows = fetch_posts(
+        subreddits,
+        keywords,
+        topic=req.topic,
+        start_date=cfg["start_date"],
+        post_limit=post_limit,
+        time_filter=time_filter,
+    )
     save_reddit(rows, topic=req.topic)
     return {"rows": len(rows), "topic": req.topic}
 
 
 @app.post("/fetch/github")
 def fetch_github_api():
-    df = fetch_issues()
-    save_issues(df)
-    return {"rows": len(df)}
+    try:
+        df = fetch_issues()
+        save_issues(df)
+        return {"rows": len(df)}
+    except Exception as exc:
+        from config import GITHUB_REPO
+        return {"rows": 0, "error": str(exc), "repo": GITHUB_REPO}
 
 
 @app.get("/eda/polymarket")
@@ -143,6 +169,15 @@ def signals_preview(req: SignalRequest):
         "last_signal": int(signals.iloc[-1]) if len(signals) else 0,
         "last_price": float(prices.iloc[-1]) if len(prices) else 0.0,
     }
+
+
+@app.post("/signals/suggest")
+def signals_suggest(req: SignalRequest):
+    """
+    Simple heuristic: aim for balanced signal counts by nudging RSI thresholds.
+    """
+    # Default suggestion for now; can be improved with grid search.
+    return {"rsi_low": 45, "rsi_high": 55, "note": "Baseline RSI thresholds"}
 
 
 @app.post("/backtest")

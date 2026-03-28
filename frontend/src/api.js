@@ -20,6 +20,7 @@ export const api = {
   fetchGithub: () => fetchJson('/fetch/github', { method: 'POST' }),
   edaPolymarket: () => fetchJson('/eda/polymarket'),
   previewSignals: (body) => fetchJson('/signals/preview', { method: 'POST', body: JSON.stringify(body) }),
+  suggestSignals: (body) => fetchJson('/signals/suggest', { method: 'POST', body: JSON.stringify(body || {}) }),
   backtest: (body) => fetchJson('/backtest', { method: 'POST', body: JSON.stringify(body) }),
   summary: () => fetchJson('/summary')
 }

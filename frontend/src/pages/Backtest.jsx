@@ -1,7 +1,21 @@
 import { useState } from 'react'
+import { Line } from 'react-chartjs-2'
+import {
+  Chart as ChartJS,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend)
 import { api } from '../api.js'
+import { useApp } from '../store.jsx'
 
 export default function Backtest() {
+  const { signalConfig } = useApp()
   const [result, setResult] = useState(null)
   const [status, setStatus] = useState('')
 
@@ -9,12 +23,12 @@ export default function Backtest() {
     setStatus('Running...')
     try {
       const res = await api.backtest({
-        strike_val: 100,
-        direction: 'up',
-        rsi_low: 45,
-        rsi_high: 55,
-        trade_on: 'futures',
-        resample_rule: '1h'
+        strike_val: signalConfig.strike,
+        direction: signalConfig.direction,
+        rsi_low: signalConfig.rsiLow,
+        rsi_high: signalConfig.rsiHigh,
+        trade_on: signalConfig.tradeOn,
+        resample_rule: signalConfig.resample
       })
       setResult(res)
       setStatus('Done')
@@ -24,6 +38,20 @@ export default function Backtest() {
   }
 
   const metrics = result?.metrics || {}
+
+  const equity = result?.equity_curve || []
+  const chartData = {
+    labels: equity.map((p) => p.date),
+    datasets: [
+      {
+        label: 'Equity',
+        data: equity.map((p) => p.value),
+        borderColor: '#ffb703',
+        backgroundColor: 'rgba(255, 183, 3, 0.2)',
+        tension: 0.3
+      }
+    ]
+  }
 
   return (
     <div className="grid">
@@ -38,6 +66,10 @@ export default function Backtest() {
           <div style={{ fontSize: 28, fontWeight: 600 }}>{metrics[key] ?? '—'}</div>
         </div>
       ))}
+      <div className="card" style={{ gridColumn: '1 / -1' }}>
+        <h3>Equity Curve</h3>
+        {equity.length ? <Line data={chartData} /> : <p>No results yet.</p>}
+      </div>
       <div className="card" style={{ gridColumn: '1 / -1' }}>
         <h3>Recent Trades</h3>
         <table className="table">
