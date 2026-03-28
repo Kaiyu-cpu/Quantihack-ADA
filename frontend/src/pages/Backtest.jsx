@@ -43,6 +43,7 @@ export default function Backtest() {
   const metrics = result?.metrics || {}
   const equity = result?.equity_curve || []
   const trades = result?.trades || []
+  const signalCounts = result?.signal_counts || { buy: 0, sell: 0, hold: 0 }
   const chartData = {
     labels: equity.map((p) => p.date),
     datasets: [
@@ -158,14 +159,14 @@ export default function Backtest() {
       </div>
       <div className="card" style={{ gridColumn: '1 / -1' }}>
         <h3>Signal Distribution</h3>
-        {trades.length ? (
+        {equity.length ? (
           <Bar
             data={{
-              labels: ['Trades'],
+              labels: ['Buy', 'Sell', 'Hold'],
               datasets: [
                 {
-                  label: 'Trades',
-                  data: [trades.length],
+                  label: 'Signals',
+                  data: [signalCounts.buy, signalCounts.sell, signalCounts.hold],
                   backgroundColor: 'rgba(0,245,212,0.6)'
                 }
               ]

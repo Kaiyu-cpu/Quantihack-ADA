@@ -38,8 +38,8 @@ export default function EDA() {
         <h3>News & Reddit Activity</h3>
         <p>Use volume spikes to spot narrative shifts.</p>
         <div className="panel-row">
-          <span className="badge">News: run fetch</span>
-          <span className="badge">Reddit: run fetch</span>
+          <span className="badge">News: {data?.news_count ?? 0}</span>
+          <span className="badge">Reddit: {data?.reddit_count ?? 0}</span>
         </div>
       </div>
     </div>

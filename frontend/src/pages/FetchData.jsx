@@ -30,8 +30,13 @@ const sources = [
 
 export default function FetchData() {
   const [status, setStatus] = useState({})
-  const [eventSlug, setEventSlug] = useState('will-crude-oil-cl-hit-by-end-of-march')
-  const [topic, setTopic] = useState('oil')
+  const slugOptions = [
+    'will-crude-oil-cl-hit-by-end-of-march',
+    'btc-updown-15m'
+  ]
+  const topicOptions = ['oil', 'crypto', 'gold']
+  const [eventSlug, setEventSlug] = useState(slugOptions[0])
+  const [topic, setTopic] = useState(topicOptions[0])
   const [fastReddit, setFastReddit] = useState(true)
 
   async function runFetch(source) {
@@ -54,18 +59,22 @@ export default function FetchData() {
       <div className="card" style={{ gridColumn: '1 / -1' }}>
         <h3>Fetch Configuration</h3>
         <div className="panel-row">
-          <input
-            className="input"
-            value={eventSlug}
-            onChange={(e) => setEventSlug(e.target.value)}
-            placeholder="Polymarket event slug"
-          />
-          <input
-            className="input"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            placeholder="Topic (oil, crypto, gold)"
-          />
+          <label>
+            Event Slug
+            <select className="input" value={eventSlug} onChange={(e) => setEventSlug(e.target.value)}>
+              {slugOptions.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Topic
+            <select className="input" value={topic} onChange={(e) => setTopic(e.target.value)}>
+              {topicOptions.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input type="checkbox" checked={fastReddit} onChange={(e) => setFastReddit(e.target.checked)} />
             Fast Reddit
