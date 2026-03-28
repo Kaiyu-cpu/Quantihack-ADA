@@ -1,0 +1,6 @@
+repo,median_survival_days,agility_score
+pallets/flask,0.0,1.0
+psf/requests,0.0,1.0
+scrapy/scrapy,15.0,0.0625
+pytest-dev/pytest,1.0,0.5
+tornadoweb/tornado,10.0,0.0909
