@@ -6,7 +6,7 @@ from ingestion.polymarket_fetcher import fetch_event_prices, save_raw as save_po
 from processing.survival_analysis import compute_agility_score
 from processing.market_features   import compute_market_features
 from processing.indicators        import build_signals_from_event_df
-from processing.price_align       import align_to_index
+from processing.price_align       import align_to_index, shift_signals
 from execution.backtester         import run_backtest
 from config import (
     POLY_STRIKE_VAL,
@@ -20,6 +20,7 @@ from config import (
     RSI_HIGH,
     TRADE_ON,
     FUTURES_CSV_PATH,
+    POLY_LEAD_HOURS,
 )
 
 
@@ -79,7 +80,10 @@ def run_pipeline(event_slug: str) -> None:
         futures_series = futures_df.set_index("timestamp")["close"]
         trade_prices = align_to_index(futures_series, prices.index)
 
-    result = run_backtest(trade_prices, signals)
+    shifted_signals = shift_signals(signals, POLY_LEAD_HOURS)
+    shifted_signals = shifted_signals.reindex(trade_prices.index, fill_value=0)
+
+    result = run_backtest(trade_prices, shifted_signals)
     print("Backtest metrics:", result["metrics"])
 
 

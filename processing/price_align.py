@@ -21,3 +21,12 @@ def align_to_index(series: pd.Series, target_index: pd.DatetimeIndex, method: st
     # Reindex to target timestamps with a safe fill
     aligned = s.reindex(target_index, method=method)
     return aligned
+
+
+def shift_signals(signals: pd.Series, hours: int) -> pd.Series:
+    """
+    Shift signals forward in time by N hours (lead-lag adjustment).
+    """
+    if signals.index.tz is None:
+        signals.index = signals.index.tz_localize("UTC")
+    return signals.shift(freq=pd.Timedelta(hours=hours))

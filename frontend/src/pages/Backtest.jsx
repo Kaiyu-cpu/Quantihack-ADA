@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Line } from 'react-chartjs-2'
+import { Line, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   LineElement,
+  BarElement,
   PointElement,
   LinearScale,
   CategoryScale,
@@ -10,12 +11,12 @@ import {
   Legend
 } from 'chart.js'
 
-ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend)
+ChartJS.register(LineElement, BarElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend)
 import { api } from '../api.js'
 import { useApp } from '../store.jsx'
 
 export default function Backtest() {
-  const { signalConfig } = useApp()
+  const { signalConfig, setSignalConfig } = useApp()
   const [result, setResult] = useState(null)
   const [status, setStatus] = useState('')
 
@@ -28,7 +29,9 @@ export default function Backtest() {
         rsi_low: signalConfig.rsiLow,
         rsi_high: signalConfig.rsiHigh,
         trade_on: signalConfig.tradeOn,
-        resample_rule: signalConfig.resample
+        resample_rule: signalConfig.resample,
+        lead_hours: signalConfig.leadHours,
+        signal_type: signalConfig.signalType
       })
       setResult(res)
       setStatus('Done')
@@ -38,8 +41,8 @@ export default function Backtest() {
   }
 
   const metrics = result?.metrics || {}
-
   const equity = result?.equity_curve || []
+  const trades = result?.trades || []
   const chartData = {
     labels: equity.map((p) => p.date),
     datasets: [
@@ -56,6 +59,89 @@ export default function Backtest() {
   return (
     <div className="grid">
       <div className="card" style={{ gridColumn: '1 / -1' }}>
+        <h3>Backtest Parameters</h3>
+        <div className="panel-row">
+          <label>
+            Strike
+            <input
+              className="input"
+              value={signalConfig.strike}
+              onChange={(e) => setSignalConfig({ ...signalConfig, strike: Number(e.target.value) })}
+            />
+          </label>
+          <label>
+            Direction
+            <select
+              className="input"
+              value={signalConfig.direction}
+              onChange={(e) => setSignalConfig({ ...signalConfig, direction: e.target.value })}
+            >
+              <option value="up">up</option>
+              <option value="down">down</option>
+            </select>
+          </label>
+          <label>
+            RSI Low
+            <input
+              className="input"
+              value={signalConfig.rsiLow}
+              onChange={(e) => setSignalConfig({ ...signalConfig, rsiLow: Number(e.target.value) })}
+            />
+          </label>
+          <label>
+            RSI High
+            <input
+              className="input"
+              value={signalConfig.rsiHigh}
+              onChange={(e) => setSignalConfig({ ...signalConfig, rsiHigh: Number(e.target.value) })}
+            />
+          </label>
+          <label>
+            Trade On
+            <select
+              className="input"
+              value={signalConfig.tradeOn}
+              onChange={(e) => setSignalConfig({ ...signalConfig, tradeOn: e.target.value })}
+            >
+              <option value="polymarket">polymarket</option>
+              <option value="futures">futures</option>
+            </select>
+          </label>
+          <label>
+            Signal Type
+            <select
+              className="input"
+              value={signalConfig.signalType}
+              onChange={(e) => setSignalConfig({ ...signalConfig, signalType: e.target.value })}
+            >
+              <option value="rsi">RSI</option>
+              <option value="true_price">True Price</option>
+            </select>
+          </label>
+          <label>
+            Lead Hours
+            <input
+              className="input"
+              value={signalConfig.leadHours}
+              onChange={(e) => setSignalConfig({ ...signalConfig, leadHours: Number(e.target.value) })}
+            />
+          </label>
+          <label>
+            Resample
+            <select
+              className="input"
+              value={signalConfig.resample}
+              onChange={(e) => setSignalConfig({ ...signalConfig, resample: e.target.value })}
+            >
+              <option value="1h">1h</option>
+              <option value="30m">30m</option>
+              <option value="15m">15m</option>
+              <option value="1d">1d</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div className="card" style={{ gridColumn: '1 / -1' }}>
         <h3>Run Backtest</h3>
         <button className="button" onClick={runBacktest}>Run</button>
         <span style={{ marginLeft: 12, color: 'var(--muted)' }}>{status}</span>
@@ -69,6 +155,25 @@ export default function Backtest() {
       <div className="card" style={{ gridColumn: '1 / -1' }}>
         <h3>Equity Curve</h3>
         {equity.length ? <Line data={chartData} /> : <p>No results yet.</p>}
+      </div>
+      <div className="card" style={{ gridColumn: '1 / -1' }}>
+        <h3>Signal Distribution</h3>
+        {trades.length ? (
+          <Bar
+            data={{
+              labels: ['Trades'],
+              datasets: [
+                {
+                  label: 'Trades',
+                  data: [trades.length],
+                  backgroundColor: 'rgba(0,245,212,0.6)'
+                }
+              ]
+            }}
+          />
+        ) : (
+          <p>No trades yet.</p>
+        )}
       </div>
       <div className="card" style={{ gridColumn: '1 / -1' }}>
         <h3>Recent Trades</h3>

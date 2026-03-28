@@ -9,7 +9,9 @@ export function AppProvider({ children }) {
     rsiLow: 45,
     rsiHigh: 55,
     resample: '1h',
-    tradeOn: 'futures'
+    tradeOn: 'futures',
+    leadHours: 2,
+    signalType: 'rsi'
   })
 
   return (

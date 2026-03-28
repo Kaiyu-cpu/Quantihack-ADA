@@ -30,7 +30,8 @@ from ingestion.news_fetcher import fetch_news, save_raw as save_news, TOPIC_DEFA
 from ingestion.reddit_fetcher import fetch_posts, save_raw as save_reddit, TOPIC_DEFAULTS as REDDIT_DEFAULTS
 from ingestion.github_fetcher import fetch_issues, save_raw as save_issues
 from processing.indicators import build_signals_from_event_df
-from processing.price_align import align_to_index
+from processing.true_price_signal import compute_true_price_series, zscore_signal
+from processing.price_align import align_to_index, shift_signals
 from execution.backtester import run_backtest
 from config import DATA_RAW_DIR, FUTURES_CSV_PATH
 
@@ -63,49 +64,12 @@ class SignalRequest(BaseModel):
     sma_window: int = 12
     ema_window: int = 12
     bb_window: int = 20
+    signal_type: str = "rsi"
 
 
 class BacktestRequest(SignalRequest):
-    trade_on: str = "polymarket"
+    trade_on: str = "polymarket"  # or "futures"
 
-
-class NewsItem(BaseModel):
-    topic: str
-    published_utc: str
-    title: str
-    summary: str
-    source: str
-    url: str
-
-
-class RedditItem(BaseModel):
-    topic: str
-    published_utc: str
-    subreddit: str
-    title: str
-    selftext: str
-    score: int
-    num_comments: int
-    upvote_ratio: float
-    url: str
-    permalink: str
-
-
-class AISummaryRequest(BaseModel):
-    topic: str
-    news: list[dict]
-    reddit: list[dict]
-    model: Optional[str] = None
-
-
-class AISummaryResponse(BaseModel):
-    summary: str
-    model: str
-    news_count: int
-    reddit_count: int
-
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _load_polymarket_csv(path: str) -> pd.DataFrame:
     if not os.path.exists(path):
@@ -202,18 +166,24 @@ def eda_polymarket():
 def signals_preview(req: SignalRequest):
     path = os.path.join(DATA_RAW_DIR, "polymarket", "crude_oil_prices.csv")
     df = _load_polymarket_csv(path)
-    prices, signals, _ind = build_signals_from_event_df(
-        df,
-        strike_val=req.strike_val,
-        direction=req.direction,
-        resample_rule=req.resample_rule,
-        sma_w=req.sma_window,
-        ema_w=req.ema_window,
-        bb_w=req.bb_window,
-        rsi_w=req.rsi_window,
-        rsi_low=req.rsi_low,
-        rsi_high=req.rsi_high,
-    )
+    if req.signal_type == "true_price":
+        times = df["timestamp"].drop_duplicates().sort_values()
+        true_price = compute_true_price_series(df, pd.DatetimeIndex(times))
+        signals = zscore_signal(true_price)
+        prices = true_price
+    else:
+        prices, signals, _ind = build_signals_from_event_df(
+            df,
+            strike_val=req.strike_val,
+            direction=req.direction,
+            resample_rule=req.resample_rule,
+            sma_w=req.sma_window,
+            ema_w=req.ema_window,
+            bb_w=req.bb_window,
+            rsi_w=req.rsi_window,
+            rsi_low=req.rsi_low,
+            rsi_high=req.rsi_high,
+        )
     return {
         "signal_counts": signals.value_counts().to_dict(),
         "last_signal": int(signals.iloc[-1]) if len(signals) else 0,
@@ -242,6 +212,7 @@ def backtest_api(req: BacktestRequest):
         rsi_low=req.rsi_low,
         rsi_high=req.rsi_high,
     )
+
     trade_prices = prices
     if req.trade_on == "futures":
         if not os.path.exists(FUTURES_CSV_PATH):
@@ -250,6 +221,7 @@ def backtest_api(req: BacktestRequest):
         fut["timestamp"] = pd.to_datetime(fut["timestamp"], utc=True)
         fut_series = fut.set_index("timestamp")["close"]
         trade_prices = align_to_index(fut_series, prices.index)
+
     result = run_backtest(trade_prices, signals)
     return result
 

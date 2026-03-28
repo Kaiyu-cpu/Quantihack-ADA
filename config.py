@@ -68,3 +68,7 @@ RSI_HIGH   = float(os.getenv("RSI_HIGH", "55"))
 # "polymarket" (trade on Polymarket price) or "futures" (trade CL=F futures)
 TRADE_ON = os.getenv("TRADE_ON", "polymarket")
 FUTURES_CSV_PATH = os.getenv("FUTURES_CSV_PATH", "data/raw/nymex/CL_F_1d.csv")
+
+# ── Lead/Lag Settings ─────────────────────────────────────────────────────────
+# Use Polymarket signal shifted forward by this many hours when trading futures.
+POLY_LEAD_HOURS = int(os.getenv("POLY_LEAD_HOURS", "2"))

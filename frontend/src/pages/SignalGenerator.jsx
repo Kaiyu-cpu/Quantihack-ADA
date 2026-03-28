@@ -8,6 +8,7 @@ export default function SignalGenerator() {
   const [direction, setDirection] = useState(signalConfig.direction)
   const [rsiLow, setRsiLow] = useState(signalConfig.rsiLow)
   const [rsiHigh, setRsiHigh] = useState(signalConfig.rsiHigh)
+  const [signalType, setSignalType] = useState(signalConfig.signalType)
   const [status, setStatus] = useState('')
   const [suggestion, setSuggestion] = useState('')
 
@@ -19,7 +20,8 @@ export default function SignalGenerator() {
         direction,
         rsi_low: Number(rsiLow),
         rsi_high: Number(rsiHigh),
-        resample_rule: '1h'
+        resample_rule: '1h',
+        signal_type: signalType
       })
       const counts = result.signal_counts || {}
       const buy = counts['1'] ?? counts[1] ?? 0
@@ -31,7 +33,8 @@ export default function SignalGenerator() {
         strike: Number(strike),
         direction,
         rsiLow: Number(rsiLow),
-        rsiHigh: Number(rsiHigh)
+        rsiHigh: Number(rsiHigh),
+        signalType
       })
     } catch (err) {
       setStatus(`Error: ${err.message}`)
@@ -40,7 +43,7 @@ export default function SignalGenerator() {
 
   async function suggestParams() {
     try {
-      const res = await api.suggestSignals({ strike_val: Number(strike), direction })
+      const res = await api.suggestSignals({ strike_val: Number(strike), direction, signal_type: signalType })
       setSuggestion(`Suggested RSI: ${res.rsi_low}/${res.rsi_high} — ${res.note ?? ''}`)
       setRsiLow(res.rsi_low)
       setRsiHigh(res.rsi_high)
@@ -62,6 +65,13 @@ export default function SignalGenerator() {
           <label>
             Direction
             <input className="input" value={direction} onChange={(e) => setDirection(e.target.value)} placeholder="up" />
+          </label>
+          <label>
+            Signal Type
+            <select className="input" value={signalType} onChange={(e) => setSignalType(e.target.value)}>
+              <option value="rsi">RSI</option>
+              <option value="true_price">True Price</option>
+            </select>
           </label>
         </div>
         <div className="panel-row" style={{ marginTop: 12 }}>
