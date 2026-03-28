@@ -1,0 +1,76 @@
+repo,issue_number,created_at,closed_at,duration_days,labels,comments,event
+apple/swift,88101,2026-03-25 18:15:14+00:00,2026-03-27 15:49:43+00:00,1,[],1,1
+apple/swift,88058,2026-03-24 14:08:28+00:00,2026-03-25 14:06:22+00:00,0,['triage needed'],1,1
+apple/swift,88023,2026-03-22 18:38:18+00:00,2026-03-22 20:11:28+00:00,0,[],0,1
+apple/swift,88021,2026-03-22 02:08:34+00:00,2026-03-24 18:40:48+00:00,2,"['crash', 'triage needed']",1,1
+apple/swift,88000,2026-03-20 22:23:58+00:00,2026-03-22 18:06:54+00:00,1,"['Windows', 'verifier', 'crash', 'SIL', 'ownership']",6,1
+apple/swift,87980,2026-03-19 21:49:26+00:00,2026-03-20 13:22:11+00:00,0,"['verifier', 'crash', 'SIL', 'triage needed']",5,1
+apple/swift,87963,2026-03-19 16:20:47+00:00,2026-03-19 16:21:37+00:00,0,['AutoDiff'],2,1
+apple/swift,87957,2026-03-19 13:13:47+00:00,2026-03-20 17:35:23+00:00,1,['triage needed'],3,1
+apple/swift,87955,2026-03-19 12:11:11+00:00,2026-03-20 18:22:33+00:00,1,"['bug', 'Windows', 'runtime']",1,1
+apple/swift,87943,2026-03-18 22:47:02+00:00,2026-03-20 16:16:52+00:00,1,"['Windows', 'IRGen', 'triage needed']",1,1
+apple/swift,87917,2026-03-17 21:32:26+00:00,2026-03-23 20:40:39+00:00,5,"['triage needed', 'swift 6.3']",1,1
+apple/swift,87906,2026-03-17 14:14:25+00:00,2026-03-27 12:35:16+00:00,9,['triage needed'],9,1
+apple/swift,87899,2026-03-17 11:55:57+00:00,2026-03-19 18:03:07+00:00,2,"['Windows', 'swift-backtrace']",1,1
+apple/swift,87881,2026-03-16 16:18:21+00:00,2026-03-22 11:46:27+00:00,5,"['crash', 'triage needed']",10,1
+apple/swift,88029,2026-03-16 10:27:48+00:00,2026-03-24 10:55:45+00:00,8,['SourceKit'],5,1
+apple/swift,87860,2026-03-13 19:46:43+00:00,2026-03-18 15:29:06+00:00,4,"['off topic', 'SwiftUI']",1,1
+apple/swift,87818,2026-03-11 20:42:08+00:00,2026-03-23 13:51:11+00:00,11,"['compiler', 'diagnostics quality', 'closures', 'expressions', 'swift 6.3']",1,1
+apple/swift,87768,2026-03-10 10:30:31+00:00,2026-03-13 16:24:06+00:00,3,"['concurrency', 'compiler', 'closures', 'actor isolation', 'Sendable', 'nonisolated(nonsending)']",0,1
+apple/swift,87759,2026-03-10 00:16:29+00:00,2026-03-25 23:00:20+00:00,15,['diagnostic verifier'],4,1
+apple/swift,87719,2026-03-06 19:44:12+00:00,2026-03-16 22:51:39+00:00,10,"['optimized only', 'crash', 'assertion failure']",5,1
+apple/swift,87640,2026-03-03 07:53:30+00:00,2026-03-03 13:22:52+00:00,0,"['noncopyable struct/enum', 'WebAssembly']",3,1
+apple/swift,87628,2026-03-02 20:59:57+00:00,2026-03-02 21:51:19+00:00,0,['triage needed'],1,1
+apple/swift,87613,2026-03-02 06:43:00+00:00,2026-03-02 17:24:57+00:00,0,['triage needed'],1,1
+apple/swift,87610,2026-03-01 22:02:33+00:00,2026-03-08 00:57:49+00:00,6,"['compiler', 'operators', 'expressions', 'unexpected error']",1,1
+apple/swift,87590,2026-02-28 07:31:40+00:00,2026-02-28 08:29:23+00:00,0,['triage needed'],1,1
+apple/swift,87587,2026-02-28 02:17:01+00:00,2026-03-09 05:57:09+00:00,9,['triage needed'],2,1
+apple/swift,87586,2026-02-28 02:09:28+00:00,2026-03-05 20:32:53+00:00,5,"['performance', 'triage needed']",1,1
+apple/swift,87566,2026-02-27 14:00:06+00:00,2026-03-13 16:48:14+00:00,14,"['compiler', 'type checker', 'regression', 'default arguments', 'overload resolution', 'unexpected error', 'swift 6.3']",7,1
+apple/swift,87525,2026-02-26 03:30:22+00:00,2026-02-26 07:19:00+00:00,0,"['parser', 'compiler', 'not a bug', 'unexpected error', 'swift 6.3', 'nonisolated(nonsending)']",2,1
+apple/swift,87524,2026-02-26 03:11:59+00:00,2026-03-12 01:41:15+00:00,13,['triage needed'],5,1
+apple/swift,87517,2026-02-26 00:00:09+00:00,2026-03-04 23:35:13+00:00,6,['triage needed'],0,1
+apple/swift,87516,2026-02-25 23:58:06+00:00,2026-02-27 01:21:22+00:00,1,['triage needed'],1,1
+apple/swift,87477,2026-02-25 01:42:31+00:00,2026-02-25 23:06:15+00:00,0,['triage needed'],2,1
+apple/swift,87470,2026-02-24 22:35:04+00:00,2026-02-26 23:32:45+00:00,2,"['Windows', 'build']",0,1
+apple/swift,87462,2026-02-24 18:40:13+00:00,2026-02-28 05:25:07+00:00,3,[],3,1
+apple/swift,87447,2026-02-24 10:30:52+00:00,2026-02-27 07:46:20+00:00,2,['triage needed'],1,1
+apple/swift,87354,2026-02-19 21:42:38+00:00,2026-02-19 21:44:48+00:00,0,[],1,1
+apple/swift,87346,2026-02-19 18:42:48+00:00,2026-02-19 20:23:51+00:00,0,['triage needed'],4,1
+apple/swift,87342,2026-02-19 14:28:17+00:00,2026-03-26 20:21:02+00:00,35,"['concurrency', 'compiler', 'diagnostics quality', 'fix-its']",1,1
+apple/swift,87327,2026-02-18 23:15:25+00:00,2026-02-24 22:17:25+00:00,5,"['build', 'embedded']",0,1
+apple/swift,87320,2026-02-18 21:40:50+00:00,2026-02-23 19:24:52+00:00,4,['WebAssembly'],0,1
+apple/swift,87300,2026-02-18 06:44:28+00:00,2026-02-20 00:58:41+00:00,1,"['type checker', 'overload resolution', 'swift 6.3']",4,1
+apple/swift,87288,2026-02-17 20:16:23+00:00,2026-02-18 18:10:31+00:00,0,['triage needed'],1,1
+apple/swift,87280,2026-02-17 15:40:12+00:00,2026-02-17 21:25:01+00:00,0,['bug'],2,1
+apple/swift,87260,2026-02-16 16:44:50+00:00,2026-03-20 11:18:40+00:00,31,['c++ interop'],2,1
+apple/swift,87255,2026-02-16 14:57:37+00:00,2026-03-08 01:44:15+00:00,19,"['bug', 'concurrency', 'compiler']",1,1
+apple/swift,87248,2026-02-15 18:52:46+00:00,2026-02-24 18:19:40+00:00,8,"['crash', 'triage needed', 'embedded']",12,1
+apple/swift,87239,2026-02-14 15:33:03+00:00,2026-03-11 22:00:40+00:00,25,"['triage needed', 'embedded']",0,1
+apple/swift,87235,2026-02-14 09:04:09+00:00,2026-02-18 01:47:51+00:00,3,"['concurrency', 'compiler', 'type checker', 'Sendable', 'nonisolated(nonsending)']",7,1
+apple/swift,87234,2026-02-14 07:12:31+00:00,2026-03-02 21:07:39+00:00,16,"['concurrency', 'compiler', 'type checker', 'not a bug', 'actor isolation', 'unexpected behavior', '@concurrent', 'swift 6.3']",4,1
+apple/swift,87214,2026-02-13 16:34:51+00:00,2026-02-13 16:57:28+00:00,0,"['compiler', 'SILOptimizer', 'crash', 'ownership', 'embedded', 'swift 6.3']",1,1
+apple/swift,87190,2026-02-12 19:15:10+00:00,2026-03-13 22:58:38+00:00,29,"['Windows', 'Android', 'build']",1,1
+apple/swift,87182,2026-02-12 16:57:21+00:00,2026-02-13 00:21:35+00:00,0,['triage needed'],2,1
+apple/swift,87121,2026-02-10 19:03:28+00:00,2026-03-23 18:15:43+00:00,40,"['bug', 'compiler', 'closures', 'expressions']",0,1
+apple/swift,87097,2026-02-09 22:58:37+00:00,2026-02-12 17:50:21+00:00,2,"['concurrency', 'type checker', 'closures', 'capture lists', 'expressions', 'nonisolated(nonsending)']",0,1
+apple/swift,87094,2026-02-09 21:54:34+00:00,2026-02-20 22:03:39+00:00,11,['Windows'],1,1
+apple/swift,87080,2026-02-09 11:59:20+00:00,2026-02-18 23:46:43+00:00,9,['build'],4,1
+apple/swift,87072,2026-02-08 18:26:14+00:00,2026-03-19 12:07:45+00:00,38,"['c++ interop', 'crash']",1,1
+apple/swift,87071,2026-02-08 18:20:23+00:00,2026-03-19 12:42:15+00:00,38,['c++ interop'],2,1
+apple/swift,87069,2026-02-08 16:04:34+00:00,2026-03-03 21:19:05+00:00,23,['triage needed'],5,1
+apple/swift,87068,2026-02-08 14:58:41+00:00,2026-03-24 14:03:55+00:00,43,"['concurrency', 'compiler', 'SILGen', 'crash', 'embedded']",2,1
+apple/swift,87039,2026-02-06 18:24:02+00:00,2026-02-21 04:18:17+00:00,14,"['compiler', 'type checker', 'generics', 'opaque types', 'crash', 'TypeResolver', 'opaque result types', 'types', 'swift 6.3']",2,1
+apple/swift,87036,2026-02-06 17:22:16+00:00,2026-03-23 20:42:29+00:00,45,"['compiler', 'SILGen', 'crash', 'expressions', 'typed throws']",5,1
+apple/swift,87025,2026-02-06 09:46:02+00:00,2026-02-09 17:53:55+00:00,3,"['compiler', 'SILOptimizer', 'run-time crash', 'crash', 'swift 6.2', 'miscompile']",1,1
+apple/swift,87022,2026-02-06 05:34:37+00:00,2026-02-06 13:20:29+00:00,0,"['compiler', 'accepts invalid', 'SIL', 'ownership', 'swift 6.3']",2,1
+apple/swift,87007,2026-02-05 17:38:46+00:00,2026-03-09 05:27:59+00:00,31,['triage needed'],1,1
+apple/swift,87005,2026-02-05 16:45:41+00:00,2026-02-05 17:25:50+00:00,0,"['c++ interop', 'Windows']",1,1
+apple/swift,86998,2026-02-05 06:12:39+00:00,2026-02-16 06:39:44+00:00,11,"['compiler', 'type checker', 'accepts invalid', 'AutoDiff', 'crash', 'swift 6.3']",1,1
+apple/swift,86969,2026-02-04 01:28:09+00:00,2026-02-05 18:59:29+00:00,1,['triage needed'],0,1
+apple/swift,86955,2026-02-03 09:46:23+00:00,2026-02-10 16:43:01+00:00,7,['runtime'],0,1
+apple/swift,86901,2026-01-30 17:45:01+00:00,2026-03-13 16:38:16+00:00,41,"['Windows', 'verifier', 'crash', 'triage needed', 'ownership']",7,1
+apple/swift,86891,2026-01-30 14:33:53+00:00,2026-02-23 19:48:57+00:00,24,"['compiler', 'SIL', 'unexpected warning', 'swift 6.2']",3,1
+apple/swift,86890,2026-01-30 13:54:22+00:00,2026-03-06 01:45:54+00:00,34,['triage needed'],1,1
+apple/swift,86886,2026-01-30 10:24:14+00:00,2026-02-02 03:50:05+00:00,2,['invalid'],1,1
+apple/swift,86841,2026-01-28 13:21:04+00:00,2026-01-29 12:20:59+00:00,0,['not a bug'],2,1
