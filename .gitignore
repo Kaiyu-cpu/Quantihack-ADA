@@ -1,0 +1,50 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Secrets / credentials ─────────────────────────────────────────────────────
+.env
+*.key
+*.pem
+
+# ── Data files (tracked separately, e.g. DVC) ────────────────────────────────
+data/raw/
+data/processed/
+*.parquet
+*.csv
+*.h5
+*.pkl
+
+# ── Model artefacts ───────────────────────────────────────────────────────────
+*.pt
+*.pth
+*.pb
+*.onnx
+saved_models/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+
+# ── Logs & reports ────────────────────────────────────────────────────────────
+*.log
+reports/*.html
+reports/*.pdf

@@ -1,0 +1,24 @@
+# ── Core Data Science ─────────────────────────────────────────────────────────
+numpy>=1.26
+pandas>=2.2
+scipy>=1.13
+
+# ── Survival Analysis ─────────────────────────────────────────────────────────
+lifelines>=0.29
+
+# ── Machine Learning ──────────────────────────────────────────────────────────
+scikit-learn>=1.4
+xgboost>=2.0
+tensorflow>=2.16          # includes Keras; swap for torch if preferred
+
+# ── Data Ingestion ────────────────────────────────────────────────────────────
+requests>=2.31
+python-dotenv>=1.0        # load .env into os.environ
+
+# ── Dashboard ─────────────────────────────────────────────────────────────────
+streamlit>=1.35
+plotly>=5.22              # richer charts inside Streamlit
+
+# ── Dev / Testing ─────────────────────────────────────────────────────────────
+pytest>=8.2
+jupyter>=1.0
