@@ -93,6 +93,7 @@ def run_backtest(prices: pd.Series, signals: pd.Series) -> dict:
         equity_curve.append({"date": str(date), "value": round(portfolio_value, 6)})
 
     metrics = _calculate_metrics(equity_curve, INITIAL_CAPITAL, BACKTEST_PERIODS_PER_YEAR)
+    metrics["n_trades"] = len(trades)
     return {"metrics": metrics, "equity_curve": equity_curve, "trades": trades, "final_capital": round(capital, 2)}
 
 

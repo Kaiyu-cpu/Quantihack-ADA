@@ -21,6 +21,8 @@ def get_series(df: pd.DataFrame, strike_val: int, direction: str = "up",
         .resample(resample_rule).last()
         .dropna()
     )
+    if s.empty:
+        raise ValueError(f"No data for strike={strike_val} direction={direction}")
     s.name = f"{direction} ${strike_val}"
     return s
 
@@ -55,14 +57,14 @@ def generate_mean_reversion_signals(ind: pd.DataFrame,
                                     rsi_low: float = 35,
                                     rsi_high: float = 65) -> pd.Series:
     """
-    Mean-reversion signals:
-      +1 price < BB lower AND RSI < rsi_low  → oversold
-      -1 price > BB upper AND RSI > rsi_high → overbought
+    Mean-reversion signals (RSI-only for Polymarket):
+      +1 RSI < rsi_low  → oversold
+      -1 RSI > rsi_high → overbought
        0 otherwise
     """
     sig = pd.Series(0, index=ind.index, name="signal", dtype=int)
-    sig[(ind["price"] < ind["bb_lower"]) & (ind["rsi"] < rsi_low)] = 1
-    sig[(ind["price"] > ind["bb_upper"]) & (ind["rsi"] > rsi_high)] = -1
+    sig[ind["rsi"] < rsi_low] = 1
+    sig[ind["rsi"] > rsi_high] = -1
     return sig
 
 

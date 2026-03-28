@@ -35,18 +35,37 @@ def run_pipeline(event_slug: str) -> None:
     print(f"Agility score: {agility_df['agility_score'].iloc[0]:.4f}")
 
     print("=== 3. Execution (mean-reversion signals) ===")
-    prices, signals, _ind = build_signals_from_event_df(
-        market_df,
-        strike_val=POLY_STRIKE_VAL,
-        direction=POLY_DIRECTION,
-        resample_rule=POLY_RESAMPLE,
-        sma_w=SMA_WINDOW,
-        ema_w=EMA_WINDOW,
-        bb_w=BB_WINDOW,
-        rsi_w=RSI_WINDOW,
-        rsi_low=RSI_LOW,
-        rsi_high=RSI_HIGH,
-    )
+    # Choose the most liquid strike/direction if configured pair has no data.
+    try:
+        prices, signals, _ind = build_signals_from_event_df(
+            market_df,
+            strike_val=POLY_STRIKE_VAL,
+            direction=POLY_DIRECTION,
+            resample_rule=POLY_RESAMPLE,
+            sma_w=SMA_WINDOW,
+            ema_w=EMA_WINDOW,
+            bb_w=BB_WINDOW,
+            rsi_w=RSI_WINDOW,
+            rsi_low=RSI_LOW,
+            rsi_high=RSI_HIGH,
+        )
+    except ValueError:
+        counts = market_df.groupby(["direction", "strike_val"]).size().sort_values(ascending=False)
+        top_dir, top_strike = counts.index[0]
+        print(f"[warn] No data for strike={POLY_STRIKE_VAL} dir={POLY_DIRECTION}. "
+              f"Falling back to strike={top_strike} dir={top_dir}.")
+        prices, signals, _ind = build_signals_from_event_df(
+            market_df,
+            strike_val=int(top_strike),
+            direction=str(top_dir),
+            resample_rule=POLY_RESAMPLE,
+            sma_w=SMA_WINDOW,
+            ema_w=EMA_WINDOW,
+            bb_w=BB_WINDOW,
+            rsi_w=RSI_WINDOW,
+            rsi_low=RSI_LOW,
+            rsi_high=RSI_HIGH,
+        )
 
     result = run_backtest(prices, signals)
     print("Backtest metrics:", result["metrics"])
