@@ -17,10 +17,10 @@ ENV/
 *.pem
 
 # ── Data files (tracked separately, e.g. DVC) ────────────────────────────────
-*.parquet
-*.csv
-*.h5
-*.pkl
+#*.parquet
+#*.csv
+#*.h5
+#*.pkl
 
 # ── Model artefacts ───────────────────────────────────────────────────────────
 *.pt
