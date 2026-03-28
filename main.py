@@ -2,19 +2,19 @@
 Pipeline entry point — wire ingestion → processing → execution together.
 """
 from ingestion.github_fetcher    import fetch_issues, save_raw as save_issues
-from ingestion.polymarket_fetcher import fetch_markets, fetch_timeseries, save_raw as save_poly
+from ingestion.polymarket_fetcher import fetch_event_prices, save_raw as save_poly
 from processing.survival_analysis import compute_agility_score
 from processing.market_features   import compute_market_features
 from execution.backtester         import run_backtest
 
 
-def run_pipeline(market_id: str) -> None:
+def run_pipeline(event_slug: str) -> None:
     print("=== 1. Ingestion ===")
     issues_df  = fetch_issues()
     save_issues(issues_df)
 
-    price_df = fetch_timeseries(market_id)
-    save_poly(price_df, f"{market_id}_prices.parquet")
+    price_df = fetch_event_prices(event_slug)
+    save_poly(price_df, f"{event_slug}_prices")
 
     print("=== 2. Processing ===")
     agility_df = compute_agility_score(issues_df)
@@ -32,4 +32,5 @@ def run_pipeline(market_id: str) -> None:
 
 
 if __name__ == "__main__":
-    run_pipeline(market_id="EXAMPLE_MARKET_ID")
+    # Polymarket event slug, e.g. "will-crude-oil-cl-hit-by-end-of-march"
+    run_pipeline(event_slug="EXAMPLE_EVENT_SLUG")
