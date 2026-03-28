@@ -101,6 +101,8 @@ col2.metric("Sharpe Ratio",   f"{metrics['sharpe_ratio']:.2f}")
 col3.metric("Max Drawdown",   f"{metrics['max_drawdown_pct']:.2f}%")
 col4.metric("Final Value",    f"{metrics['final_value']:.2f}")
 
+st.caption(f"Buy & Hold Return: {metrics.get('buy_hold_return_pct', 0.0):.2f}%  |  Trades: {metrics.get('n_trades', 0)}")
+
 # ── Equity Curve ──────────────────────────────────────────────────────────────
 st.subheader("Equity Curve")
 st.line_chart(eq.set_index("date")["value"])

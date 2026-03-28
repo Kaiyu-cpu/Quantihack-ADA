@@ -44,6 +44,9 @@ def run_backtest(prices: pd.Series, signals: pd.Series) -> dict:
     Returns: dict with metrics + equity curve + trades
     """
     df = pd.DataFrame({"close": prices, "signal": signals}).dropna()
+    df = df.sort_index()
+    # Avoid lookahead: act on the prior bar's signal
+    df["signal_prev"] = df["signal"].shift(1).fillna(0)
 
     capital = INITIAL_CAPITAL
     position = None
@@ -53,7 +56,7 @@ def run_backtest(prices: pd.Series, signals: pd.Series) -> dict:
 
     for date, row in df.iterrows():
         price = row["close"]
-        signal = row["signal"]
+        signal = row["signal_prev"]
 
         if position and current_trade:
             exit_reason = None
@@ -93,6 +96,12 @@ def run_backtest(prices: pd.Series, signals: pd.Series) -> dict:
         equity_curve.append({"date": str(date), "value": round(portfolio_value, 6)})
 
     metrics = _calculate_metrics(equity_curve, INITIAL_CAPITAL, BACKTEST_PERIODS_PER_YEAR)
+    # Buy & hold benchmark over the same period
+    if len(df) >= 2:
+        bh = (df["close"].iloc[-1] / df["close"].iloc[0]) - 1
+        metrics["buy_hold_return_pct"] = round(bh * 100, 2)
+    else:
+        metrics["buy_hold_return_pct"] = 0.0
     metrics["n_trades"] = len(trades)
     return {"metrics": metrics, "equity_curve": equity_curve, "trades": trades, "final_capital": round(capital, 2)}
 
