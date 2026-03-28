@@ -74,6 +74,6 @@ def fetch_continuous_front_month(interval: str = "1d") -> dict[str, str]:
 
 
 if __name__ == "__main__":
-    paths = fetch_continuous_front_month(interval="1d")
+    paths = fetch_continuous_front_month(interval="30m")
     for sym, path in paths.items():
         print(f"{sym} -> {path}")

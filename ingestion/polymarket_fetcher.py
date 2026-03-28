@@ -29,7 +29,7 @@ _clob  = ClobClient()
 def fetch_event_prices(
     slug: str,
     interval: str = "all",
-    fidelity: int = 60,   # resolution in minutes (60 = hourly, 1 = per-minute)
+    fidelity: int = 1,   # resolution in minutes (60 = hourly, 1 = per-minute)
 ) -> pd.DataFrame:
     """
     Fetch the full price history for every price-level market in an event.
