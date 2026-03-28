@@ -1,49 +1,122 @@
 """
-Backtesting Engine
-Simulates strategy P&L and computes Sharpe ratio, max drawdown, and other stats.
+Backtesting Engine (ported from algo-backtest)
+Simulates trade-by-trade P&L with position sizing and optional stops.
 """
 import pandas as pd
 import numpy as np
-from config import INITIAL_CAPITAL, TRANSACTION_COST
+from dataclasses import dataclass
+
+from config import (
+    INITIAL_CAPITAL,
+    RISK_PER_TRADE_PCT,
+    COMMISSION_PCT,
+    STOP_LOSS_PCT,
+    TAKE_PROFIT_PCT,
+)
+
+
+@dataclass
+class Position:
+    entry_price: float
+    shares: float
+    stop_loss_pct: float | None
+    take_profit_pct: float | None
+
+    def current_value(self, price: float) -> float:
+        return self.shares * price
+
+    def should_stop_loss(self, price: float) -> bool:
+        if self.stop_loss_pct is None:
+            return False
+        return price <= self.entry_price * (1 - self.stop_loss_pct / 100)
+
+    def should_take_profit(self, price: float) -> bool:
+        if self.take_profit_pct is None:
+            return False
+        return price >= self.entry_price * (1 + self.take_profit_pct / 100)
 
 
 def run_backtest(prices: pd.Series, signals: pd.Series) -> dict:
     """
-    prices:  asset price series (indexed by date)
-    signals: {1, -1, 0} position signals aligned with prices
-    Returns: dict of performance metrics + equity curve DataFrame
+    prices:  Polymarket price series (probabilities) indexed by timestamp
+    signals: {1, -1, 0} aligned with prices
+    Returns: dict with metrics + equity curve + trades
     """
-    df = pd.DataFrame({"price": prices, "signal": signals}).dropna()
-    df["position"] = df["signal"].shift(1).fillna(0)   # trade next bar
-    df["returns"]  = df["price"].pct_change().fillna(0)
-    df["strategy"] = df["position"] * df["returns"] - abs(df["position"].diff().fillna(0)) * TRANSACTION_COST
+    df = pd.DataFrame({"close": prices, "signal": signals}).dropna()
 
-    df["equity"] = INITIAL_CAPITAL * (1 + df["strategy"]).cumprod()
+    capital = INITIAL_CAPITAL
+    position = None
+    current_trade = None
+    trades = []
+    equity_curve = []
 
-    metrics = {
-        "sharpe_ratio":  _sharpe(df["strategy"]),
-        "max_drawdown":  _max_drawdown(df["equity"]),
-        "total_return":  df["equity"].iloc[-1] / INITIAL_CAPITAL - 1,
-        "n_trades":      int((df["position"].diff() != 0).sum()),
+    for date, row in df.iterrows():
+        price = row["close"]
+        signal = row["signal"]
+
+        if position and current_trade:
+            exit_reason = None
+            if position.should_stop_loss(price):
+                exit_reason = "stop_loss"
+            elif position.should_take_profit(price):
+                exit_reason = "take_profit"
+            elif signal == -1:
+                exit_reason = "signal"
+
+            if exit_reason:
+                proceeds = position.current_value(price)
+                commission = proceeds * (COMMISSION_PCT / 100)
+                capital += proceeds - commission
+                current_trade["exit_date"] = str(date)
+                current_trade["exit_price"] = round(price, 6)
+                current_trade["pnl"] = round(proceeds - (position.entry_price * position.shares), 6)
+                current_trade["reason"] = exit_reason
+                trades.append(current_trade)
+                position = None
+                current_trade = None
+
+        if signal == 1 and position is None:
+            amount_to_invest = capital * (RISK_PER_TRADE_PCT / 100)
+            commission = amount_to_invest * (COMMISSION_PCT / 100)
+            amount_after_commission = amount_to_invest - commission
+            shares = amount_after_commission / price
+            capital -= amount_to_invest
+            position = Position(price, shares, STOP_LOSS_PCT, TAKE_PROFIT_PCT)
+            current_trade = {
+                "entry_date": str(date),
+                "entry_price": round(price, 6),
+                "shares": round(shares, 6),
+            }
+
+        portfolio_value = capital + (position.current_value(price) if position else 0)
+        equity_curve.append({"date": str(date), "value": round(portfolio_value, 6)})
+
+    metrics = _calculate_metrics(equity_curve, INITIAL_CAPITAL)
+    return {"metrics": metrics, "equity_curve": equity_curve, "trades": trades, "final_capital": round(capital, 2)}
+
+
+def _calculate_metrics(equity_curve: list, initial_capital: float) -> dict:
+    values = pd.Series([e["value"] for e in equity_curve])
+    total_return = (values.iloc[-1] - initial_capital) / initial_capital * 100
+
+    daily_returns = values.pct_change().dropna()
+    sharpe = (daily_returns.mean() / daily_returns.std()) * np.sqrt(252) if daily_returns.std() != 0 else 0
+
+    rolling_max = values.cummax()
+    drawdown = (values - rolling_max) / rolling_max
+    max_drawdown = drawdown.min() * 100
+
+    return {
+        "total_return_pct": round(total_return, 2),
+        "sharpe_ratio": round(sharpe, 2),
+        "max_drawdown_pct": round(max_drawdown, 2),
+        "final_value": round(values.iloc[-1], 2),
     }
-    return {"metrics": metrics, "equity_curve": df}
-
-
-def _sharpe(returns: pd.Series, periods: int = 252) -> float:
-    excess = returns.mean() * periods
-    vol    = returns.std() * np.sqrt(periods)
-    return excess / vol if vol != 0 else 0.0
-
-
-def _max_drawdown(equity: pd.Series) -> float:
-    roll_max = equity.cummax()
-    drawdown = (equity - roll_max) / roll_max
-    return float(drawdown.min())
 
 
 if __name__ == "__main__":
     np.random.seed(42)
-    prices  = pd.Series(100 * (1 + np.random.randn(500) * 0.01).cumprod())
+    prices = pd.Series(100 * (1 + np.random.randn(500) * 0.01).cumprod())
     signals = pd.Series(np.random.choice([-1, 0, 1], 500))
-    result  = run_backtest(prices, signals)
+    result = run_backtest(prices, signals)
     print(result["metrics"])

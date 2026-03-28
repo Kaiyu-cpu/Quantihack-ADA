@@ -23,3 +23,16 @@ RANDOM_SEED        = 42
 # ── Backtesting ───────────────────────────────────────────────────────────────
 INITIAL_CAPITAL    = 10_000
 TRANSACTION_COST   = 0.001   # 10 bps
+
+# ── Algo-backtest params (ported in-place) ───────────────────────────────────
+# Percent of capital per trade (matches algo-backtest risk_per_trade semantics)
+RISK_PER_TRADE_PCT = float(os.getenv("RISK_PER_TRADE_PCT", "1.0"))
+
+# Commission percent per trade
+COMMISSION_PCT = float(os.getenv("COMMISSION_PCT", "0.1"))
+
+# Optional stop/take profit percent
+STOP_LOSS_PCT = os.getenv("STOP_LOSS_PCT", "")
+TAKE_PROFIT_PCT = os.getenv("TAKE_PROFIT_PCT", "")
+STOP_LOSS_PCT = float(STOP_LOSS_PCT) if STOP_LOSS_PCT else None
+TAKE_PROFIT_PCT = float(TAKE_PROFIT_PCT) if TAKE_PROFIT_PCT else None
