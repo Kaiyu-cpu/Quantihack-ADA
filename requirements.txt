@@ -16,11 +16,14 @@ requests>=2.31
 python-dotenv>=1.0        # load .env into os.environ
 yfinance>=0.2
 
+# ── AI Summary API ────────────────────────────────────────────────────────────
+fastapi>=0.111
+uvicorn[standard]>=0.29
+openai>=1.30
+
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 streamlit>=1.35
 plotly>=5.22              # richer charts inside Streamlit
-fastapi>=0.111
-uvicorn>=0.30
 
 # ── Dev / Testing ─────────────────────────────────────────────────────────────
 pytest>=8.2

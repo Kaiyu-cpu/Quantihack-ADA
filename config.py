@@ -2,6 +2,18 @@
 Central configuration — override via environment variables or a .env file.
 """
 import os
+from pathlib import Path
+
+# Load .env file if python-dotenv is available
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent / ".env")
+except ImportError:
+    pass
+
+# ── OpenAI ────────────────────────────────────────────────────────────────────
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL   = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
 # ── GitHub ────────────────────────────────────────────────────────────────────
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
